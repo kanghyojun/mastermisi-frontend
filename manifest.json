@@ -14,6 +14,11 @@
     {
       "matches" : ["http://*/*", "https://*/*"],
       "js": ["jquery.min.js"]
+    },
+    {
+      "matches": ["<all_urls>"],
+      "all_frames": true,
+      "js": ["findLogin.js"]
     }
   ],
   "background": {

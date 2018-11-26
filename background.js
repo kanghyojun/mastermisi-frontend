@@ -12,9 +12,16 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
   console.log(sender.tab ?
               "from a content script:" + sender.tab.url :
               "from the extension");
-  if (request.loginSuccess) {
-    chrome.storage.sync.set({'mastermisiToken': request.token}, function() {
-      chrome.browserAction.setPopup({'popup': 'password.html'});
-    });
+  switch (request.type) {
+    case 'login':
+      if (request.success) {
+        chrome.storage.sync.set({'mastermisiToken': request.token}, function() {
+          chrome.browserAction.setPopup({'popup': 'password.html'});
+        });
+      }
+      break;
+    case 'logout':
+      chrome.browserAction.setPopup({'popup': 'login.html'});
+      break;
   }
 });

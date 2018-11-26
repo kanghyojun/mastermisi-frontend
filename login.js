@@ -1,11 +1,20 @@
+function getUrl(path, callback) {
+  chrome.storage.sync.get(['serverURL'], function(result) {
+    const serverURL = result.serverURL == null ? 'http://localhost:5000' : result.serverURL;
+
+    callback(serverURL + path)
+  });
+}
+
 function requestLogin(id, passcode, callback) {
-  $.ajax(
-    'http://localhost:5000/auth/',
-    {type: 'POST', data: {id: id, passcode: passcode}}
-  ).done(function(data) {
-    callback({success: true, data: data});
-  }).fail(function() {
-    callback({success: false});
+  getUrl('/api/auth/', function(url) {
+    $.ajax(
+      url, {type: 'POST', data: {id: id, passcode: passcode}}
+    ).done(function(data) {
+      callback({success: true, data: data});
+    }).fail(function() {
+      callback({success: false});
+    });
   });
 }
 
@@ -23,6 +32,7 @@ $(document).ready(function() {
       const $loading = $('#loading');
       const $success = $('#success');
 
+      console.log(this.state);
       $login.toggle(this.state.login);
       $loading.toggle(this.state.loading);
       $success.toggle(this.state.success);
@@ -45,7 +55,8 @@ $(document).ready(function() {
       if (!success) {
         $login.setState({ loading: false, login: true, error: true });
       } else {
-        chrome.runtime.sendMessage({loginSuccess: true, token: data.token});
+        chrome.runtime.sendMessage({type: 'login', success: true, token: data.token});
+        chrome.browserAction.setPopup({'popup': 'password.html'});
         $login.setState({ loading: false, login: false, success: true });
       }
     });
