@@ -1,0 +1,32 @@
+{
+  "name": "Mastermisi",
+  "description": "Password more secure, more easy way.",
+  "version": "0.1",
+  "manifest_version": 2,
+  "icons": { "16": "key16.png", "128": "key128.png" },
+  "browser_action": {
+    "default_icon": {
+      "16": "key16.png"
+    },
+    "default_title": "Master password"
+  },
+  "content_scripts": [
+    {
+      "matches" : ["http://*/*", "https://*/*"],
+      "js": ["jquery.min.js"]
+    }
+  ],
+  "background": {
+    "scripts": ["background.js"],
+    "persistent": true
+  },
+  "permissions": [
+    "http://localhost/",
+    "clipboardWrite",
+	"activeTab",
+	"notifications",
+	"contextMenus",
+    "storage"
+  ],
+  "options_page": "option.html"
+}
