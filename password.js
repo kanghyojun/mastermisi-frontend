@@ -47,7 +47,7 @@ function requestApprovePassword(approvalId, passcode, callback) {
     dataType: 'json',
     data: JSON.stringify({passcode: passcode}),
   };
-  getUrl(`/api/passwords/${approvalId}/`, function(u) {
+  getUrl(`/api/pending-approvals/${approvalId}/`, function(u) {
     $.ajax(u, payload).done(function(data) {
       callback({success: true, password: data.password});
     }).fail(function() {
@@ -57,28 +57,31 @@ function requestApprovePassword(approvalId, passcode, callback) {
 }
 
 
-const $pending = $('#pending-approvals-form');
-$pending.find('button').click(function(event) {
-  console.log('submit?')
-  event.stopPropagation();
-  requestApprovePassword($pending.find('input[name=approval_id]').val(), function(result) {
-    if (result.success) {
-      chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-        chrome.tabs.sendMessage(tabs[0].id, {type: 'fill'}, function(response) {
-        });
-      });
-    } else {
-      console.error('error handling');
-    }
-  });
-});
-
 $(document).ready(function() {
   $('#logout').click(function() {
     chrome.storage.sync.set({'mastermisiToken': null}, function(d) {
       chrome.runtime.sendMessage({type: 'logout'});
     });
   });
+  const $pending = $('#pending-approvals-form');
+  $pending.find('input[type=button]').click(function(event) {
+    event.stopPropagation();
+    requestApprovePassword(
+      $pending.find('input[name=approval_id]').val(),
+      $pending.find('input[name=passcode]').val(),
+      function(result) {
+        if (result.success) {
+          chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+            chrome.tabs.sendMessage(tabs[0].id, {type: 'fill'}, function(response) {
+            });
+          });
+        } else {
+          console.error('error handling');
+        }
+      }
+    );
+  });
+
 
   const $approv = $('#pending-approvals');
   const $gen = $('#create-password');

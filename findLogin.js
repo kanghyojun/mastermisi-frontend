@@ -13,25 +13,27 @@ function find(request) {
     }
   }
 
-  return {found: result}
+  return {found: result};
 }
 
 function fill(request) {
   for (const elem of document.getElementsByTagName('input')) {
     if (elem.type === 'password') {
+        console.log(elem);
         elem.value = request.password
     }
   }
+
+  return {fill: true};
 }
 
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
-  console.log(request);
   switch (request.type) {
     case 'find':
       message = find(request)
       break;
     case 'fill':
-      message = fill(reuqset)
+      message = fill(request)
       break;
   }
   sendResponse(message);
