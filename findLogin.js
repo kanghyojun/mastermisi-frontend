@@ -1,9 +1,23 @@
+function isAccountId(formName) {
+  let result = false;
+  const nameList = ['id', 'email', 'login', 'name', 'identifier'];
+
+  result = result || nameList.indexOf(formName) !== -1;
+
+  for (name of nameList) {
+    result = result || formName.match(`_${name}`) != null;
+    result = result || formName.match('[a-zA-Z]' + name.charAt(0).toUpperCase() + name.slice(1, name.length)) != null;
+  }
+
+  return result;
+}
+
 function find(request) {
   let result = false;
   for (const elem of document.getElementsByTagName('input')) {
     switch (elem.type) {
       case 'text': 
-        if (elem.name in ['id', 'email', 'name', 'identifier']) {
+        if (isAccountId(elem.name)) {
           result = true;
         }
         break;
@@ -19,8 +33,11 @@ function find(request) {
 function fill(request) {
   for (const elem of document.getElementsByTagName('input')) {
     if (elem.type === 'password') {
-        console.log(elem);
-        elem.value = request.password
+      elem.value = request.account.password;
+    } else if (elem.type === 'text' && isAccountId(elem.name)) {
+      elem.value = request.account.id;
+    } else if (elem.type === 'email') {
+      elem.value = request.account.id;
     }
   }
 

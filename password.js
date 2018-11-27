@@ -40,7 +40,6 @@ function requestGenerateApprovals(id, callback) {
 }
 
 function requestApprovePassword(approvalId, passcode, callback) {
-  console.log(approvalId);
   const payload = {
     type: 'POST',
     contentType: 'application/json',
@@ -49,7 +48,8 @@ function requestApprovePassword(approvalId, passcode, callback) {
   };
   getUrl(`/api/pending-approvals/${approvalId}/`, function(u) {
     $.ajax(u, payload).done(function(data) {
-      callback({success: true, password: data.password});
+      console.log(data)
+      callback({success: true, password: data.password, id: data.id});
     }).fail(function() {
       callback({success: false});
     });
@@ -72,8 +72,9 @@ $(document).ready(function() {
       function(result) {
         if (result.success) {
           chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-            chrome.tabs.sendMessage(tabs[0].id, {type: 'fill'}, function(response) {
-            });
+            const message = {type: 'fill', account: {id: result.id, password: result.password}};
+
+            chrome.tabs.sendMessage(tabs[0].id, message, function(response) { });
           });
         } else {
           console.error('error handling');
