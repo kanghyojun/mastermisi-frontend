@@ -119,6 +119,8 @@ $(document).ready(function() {
   $gen.hide();
 
   chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+    chrome.tabs.executeScript({'file': 'findLogin.js'});
+
     chrome.tabs.sendMessage(tabs[0].id, {type: 'find'}, function(response) {
       if (response == null) {
         return;
