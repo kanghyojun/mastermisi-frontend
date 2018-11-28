@@ -64,8 +64,9 @@ $(document).ready(function() {
 
         chrome.storage.sync.set({'mastermisiToken': data.token}, function() {
           chrome.storage.sync.set({'passphrase': passcode}, function() {
-            chrome.browserAction.setPopup({'popup': 'password.html'});
-            window.location.href = 'password.html'
+            chrome.browserAction.setPopup({'popup': 'password.html'}, function() {
+              window.location.href = 'password.html';
+            });
           });
         });
       }
