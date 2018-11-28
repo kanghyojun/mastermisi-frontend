@@ -45,6 +45,8 @@ function fill(request) {
 }
 
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
+  let message = null;
+
   switch (request.type) {
     case 'find':
       message = find(request)
@@ -53,5 +55,6 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
       message = fill(request)
       break;
   }
+
   sendResponse(message);
 });

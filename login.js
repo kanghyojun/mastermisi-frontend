@@ -7,10 +7,15 @@ function getUrl(path, callback) {
 }
 
 function requestLogin(id, passcode, callback) {
+  const payload = {
+    type: 'POST',
+    contentType: 'application/json',
+    dataType: 'json',
+    data: JSON.stringify({name: id, passphrase: passcode})
+  };
+
   getUrl('/api/auth/', function(url) {
-    $.ajax(
-      url, {type: 'POST', data: {id: id, passcode: passcode}}
-    ).done(function(data) {
+    $.ajax(url, payload).done(function(data) {
       callback({success: true, data: data});
     }).fail(function() {
       callback({success: false});

@@ -1,8 +1,10 @@
 function getUrl(path, callback) {
-  chrome.storage.sync.get(['serverURL'], function(result) {
-    const serverURL = result.serverURL == null ? 'http://localhost:5000' : result.serverURL;
+  chrome.storage.sync.get(['mastermisiToken'], function(tok) {
+    chrome.storage.sync.get(['serverURL'], function(result) {
+      const serverURL = result.serverURL == null ? 'http://localhost:5000' : result.serverURL;
 
-    callback(serverURL + path)
+      callback(serverURL + path + `?token=${tok.mastermisiToken}`);
+    });
   });
 }
 
@@ -32,7 +34,7 @@ function requestGenerateApprovals(id, callback) {
   };
   getUrl(`/api/passwords/${id}/approvals/`, function(u) {
     $.ajax(u, payload).done(function(data) {
-      callback({success: true, id: data.id});
+      callback({success: true, id: data.id, quiz_answer: data.quiz_answer});
     }).fail(function() {
       callback({success: false});
     });
@@ -86,33 +88,29 @@ $(document).ready(function() {
 
   const $approv = $('#pending-approvals');
   const $gen = $('#create-password');
-  const $approvId = $approv.find('input[name=approval_id]')
   $approv.hide();
   $gen.hide();
 
   chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
     chrome.tabs.sendMessage(tabs[0].id, {type: 'find'}, function(response) {
+      console.log(response)
       if (response == null) {
         return;
       }
 
       if (response.found) {
         requestLookupPassword(tabs[0].url, function(result) {
+          console.log('lokup', result);
           if (result.found) {
-            if ($approvId.val() == '') {
               requestGenerateApprovals(result.id, function(genResult) {
                 if (!genResult.success) {
                   console.error('Error');
                 }
 
-                $approvId.val(genResult.id);
+                $approv.find('#passcode').html(genResult.quiz_answer);
                 $approv.show();
                 $gen.hide();
               });
-            } else {
-                $approv.show();
-                $gen.hide();
-            }
           } else {
             $approv.hide();
             $gen.show();
