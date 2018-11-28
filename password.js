@@ -59,6 +59,51 @@ function requestApprovePassword(approvalId, passcode, callback) {
 }
 
 
+function decryptApprovedPassword(id, passphrase, callback) {
+  const payload = {
+    type: 'POST',
+    contentType: 'application/json',
+    dataType: 'json',
+    data: JSON.stringify({passphrase: passphrase}),
+  };
+  getUrl(`/api/approvals/${approvalId}/decrypt/`, function(u) {
+    $.ajax(u, payload).done(function(data) {
+      callback(data);
+    }).fail(function() {
+      callback({success: false});
+    });
+  });
+}
+
+function pollApprovePassword(id, passphrase) {
+  const payload = {
+    type: 'GET',
+    contentType: 'application/json',
+    dataType: 'json',
+  };
+
+  getUrl(`/api/pending-approvals/${id}/approved/`, function(u) {
+    $.ajax(u, payload).done(function(data) {
+      if (data.success) {
+        decryptApprovedPassword(id, passcode, function(decyrpt) {
+          if (decrypt.success) {
+            chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+              const message = {type: 'fill', account: {id: decrypt.name, password: decrypt.passphrase}};
+              chrome.tabs.sendMessage(tabs[0].id, message, function(response) { });
+            });
+          } else {
+            setTimeout(pollApprovePassword, 7000, id, passphrase);
+          }
+        });
+      } else {
+        setTimeout(pollApprovePassword, 5000, id, passphrase);
+      }
+    }).fail(function() {
+        setTimeout(pollApprovePassword, 10000, id, passphrase);
+    });
+  });
+}
+
 $(document).ready(function() {
   $('#logout').click(function() {
     chrome.storage.sync.set({'mastermisiToken': null}, function(d) {
@@ -66,26 +111,6 @@ $(document).ready(function() {
     });
   });
   const $pending = $('#pending-approvals-form');
-  $pending.find('input[type=button]').click(function(event) {
-    event.stopPropagation();
-    requestApprovePassword(
-      $pending.find('input[name=approval_id]').val(),
-      $pending.find('input[name=passcode]').val(),
-      function(result) {
-        if (result.success) {
-          chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-            const message = {type: 'fill', account: {id: result.id, password: result.password}};
-
-            chrome.tabs.sendMessage(tabs[0].id, message, function(response) { });
-          });
-        } else {
-          console.error('error handling');
-        }
-      }
-    );
-  });
-
-
   const $approv = $('#pending-approvals');
   const $gen = $('#create-password');
   $approv.hide();
@@ -93,14 +118,12 @@ $(document).ready(function() {
 
   chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
     chrome.tabs.sendMessage(tabs[0].id, {type: 'find'}, function(response) {
-      console.log(response)
       if (response == null) {
         return;
       }
 
       if (response.found) {
         requestLookupPassword(tabs[0].url, function(result) {
-          console.log('lokup', result);
           if (result.found) {
               requestGenerateApprovals(result.id, function(genResult) {
                 if (!genResult.success) {
@@ -108,6 +131,10 @@ $(document).ready(function() {
                 }
 
                 $approv.find('#passcode').html(genResult.quiz_answer);
+
+                chrome.storage.sync.get(['plain_pass'], function(store) {
+                  pollApprovePassword(genResult.id, store.plainPass);
+                });
                 $approv.show();
                 $gen.hide();
               });

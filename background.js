@@ -16,7 +16,9 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     case 'login':
       if (request.success) {
         chrome.storage.sync.set({'mastermisiToken': request.token}, function() {
-          chrome.browserAction.setPopup({'popup': 'password.html'});
+          chrome.storage.sync.set({'plainPass': request.passcode}, function() {
+            chrome.browserAction.setPopup({'popup': 'password.html'});
+          });
         });
       }
       break;

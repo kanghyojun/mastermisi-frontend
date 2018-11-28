@@ -47,7 +47,7 @@ $(document).ready(function() {
   $login.setState({ login: true });
 
   $login.submit(function(event) {
-    event.stopPropagation()
+    event.preventDefault();
     const $this = $(this);
     const id = $this.find('input[name=id]').val();
     const passcode = $this.find('input[name=passcode]').val();
@@ -60,9 +60,8 @@ $(document).ready(function() {
       if (!success) {
         $login.setState({ loading: false, login: true, error: true });
       } else {
-        chrome.runtime.sendMessage({type: 'login', success: true, token: data.token});
-        chrome.browserAction.setPopup({'popup': 'password.html'});
         $login.setState({ loading: false, login: false, success: true });
+        chrome.runtime.sendMessage({type: 'login', success: true, token: data.token, passcode: passcode});
       }
     });
   });
