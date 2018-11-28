@@ -13,15 +13,6 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
               "from a content script:" + sender.tab.url :
               "from the extension");
   switch (request.type) {
-    case 'login':
-      if (request.success) {
-        chrome.storage.sync.set({'mastermisiToken': request.token}, function() {
-          chrome.storage.sync.set({'plainPass': request.passcode}, function() {
-            chrome.browserAction.setPopup({'popup': 'password.html'});
-          });
-        });
-      }
-      break;
     case 'logout':
       chrome.browserAction.setPopup({'popup': 'login.html'});
       break;

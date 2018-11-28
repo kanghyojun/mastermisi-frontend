@@ -66,7 +66,7 @@ function decryptApprovedPassword(id, passphrase, callback) {
     dataType: 'json',
     data: JSON.stringify({passphrase: passphrase}),
   };
-  getUrl(`/api/approvals/${approvalId}/decrypt/`, function(u) {
+  getUrl(`/api/approvals/${id}/decrypt/`, function(u) {
     $.ajax(u, payload).done(function(data) {
       callback(data);
     }).fail(function() {
@@ -85,7 +85,7 @@ function pollApprovePassword(id, passphrase) {
   getUrl(`/api/pending-approvals/${id}/approved/`, function(u) {
     $.ajax(u, payload).done(function(data) {
       if (data.success) {
-        decryptApprovedPassword(id, passcode, function(decyrpt) {
+        decryptApprovedPassword(id, passphrase, function(decrypt) {
           if (decrypt.success) {
             chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
               const message = {type: 'fill', account: {id: decrypt.name, password: decrypt.passphrase}};
@@ -134,8 +134,8 @@ $(document).ready(function() {
 
                 $approv.find('#passcode').html(genResult.quiz_answer);
 
-                chrome.storage.sync.get(['plain_pass'], function(store) {
-                  pollApprovePassword(genResult.id, store.plainPass);
+                chrome.storage.sync.get(['passphrase'], function(store) {
+                  pollApprovePassword(genResult.id, store.passphrase);
                 });
                 $approv.show();
                 $gen.hide();

@@ -61,8 +61,13 @@ $(document).ready(function() {
         $login.setState({ loading: false, login: true, error: true });
       } else {
         $login.setState({ loading: false, login: false, success: true });
-        chrome.runtime.sendMessage({type: 'login', success: true, token: data.token, passcode: passcode});
-        window.location.href = 'password.html'
+
+        chrome.storage.sync.set({'mastermisiToken': data.token}, function() {
+          chrome.storage.sync.set({'passphrase': passcode}, function() {
+            chrome.browserAction.setPopup({'popup': 'password.html'});
+            window.location.href = 'password.html'
+          });
+        });
       }
     });
   });
