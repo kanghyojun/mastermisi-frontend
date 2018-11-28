@@ -62,6 +62,7 @@ $(document).ready(function() {
       } else {
         $login.setState({ loading: false, login: false, success: true });
         chrome.runtime.sendMessage({type: 'login', success: true, token: data.token, passcode: passcode});
+        window.location.href = 'password.html'
       }
     });
   });

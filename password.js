@@ -105,7 +105,9 @@ function pollApprovePassword(id, passphrase) {
 }
 
 $(document).ready(function() {
-  $('#logout').click(function() {
+  $('#logout').click(function(event) {
+    event.preventDefault();
+    window.location.href = 'login.html'
     chrome.storage.sync.set({'mastermisiToken': null}, function(d) {
       chrome.runtime.sendMessage({type: 'logout'});
     });
